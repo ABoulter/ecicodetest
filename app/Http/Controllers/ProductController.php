@@ -32,7 +32,6 @@ class ProductController extends Controller
             ]);
         }
 
-
         $pricesQuery = Price::where('product_id', $product->id);
 
         if ($accountId) {
@@ -46,31 +45,23 @@ class ProductController extends Controller
 
         $prices = $pricesQuery->get();
 
-        if ($prices === null || $prices->isEmpty()) {
+        if ($matchingLivePrice->isEmpty() || $matchingLivePrice === null) {
 
             $lowestPrice = Price::where('product_id', $product->id)
                 ->where(function ($query) use ($accountId) {
                     $query->where('account_id', $accountId)
                         ->orWhereNull('account_id');
                 })
-                ->orderBy('value')
-                ->value('value');
+                ->min('value');
 
-
-            $lowestPriceProduct = Product::where('id', $product->id)->first();
-
-            if ($lowestPriceProduct) {
-                return response()->json([
-                    'product_sku' => $lowestPriceProduct->sku,
-                    'price' => $lowestPrice,
-                ]);
-            } else {
-                return response()->json(['error' => 'No matching price found'], 404);
-            }
+            return response()->json([
+                'product_sku' => $productSku,
+                'price' => $lowestPrice,
+            ]);
         }
 
 
-        $winningPrice = $prices->min('price');
+        $winningPrice = $prices->min('value');
 
         return response()->json([
             'product_sku' => $productSku,
