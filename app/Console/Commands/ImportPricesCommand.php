@@ -4,11 +4,12 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use App\Models\Price;
-use App\Models\Product;
-use App\Models\Account;
 use App\Models\User;
+use App\Models\Price;
+use App\Models\Account;
+use App\Models\Product;
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\File;
 
 class ImportPricesCommand extends Command
 {
@@ -32,8 +33,9 @@ class ImportPricesCommand extends Command
             return;
         }
 
-
         fgetcsv($file);
+
+        $livePrices = $this->getLivePrices();
 
         while (($data = fgetcsv($file)) !== false) {
             $productCode = $data[0];
@@ -48,7 +50,6 @@ class ImportPricesCommand extends Command
                 $this->warn("Product not found with code: $productCode");
                 continue;
             }
-
 
             $account = null;
             if ($accountRef) {
@@ -71,12 +72,53 @@ class ImportPricesCommand extends Command
             $price->account()->associate($account);
             $price->user()->associate($user);
             $price->quantity = $quantity;
-            $price->value = $value;
+
+
+            $matchingLivePrice = $this->findMatchingLivePrice($livePrices, $productCode, $accountRef);
+            if ($matchingLivePrice) {
+                $price->value = $matchingLivePrice['price'];
+            } else {
+                $price->value = $value;
+            }
+
             $price->save();
         }
 
         fclose($file);
 
         $this->info('Prices imported successfully.');
+    }
+
+    protected function getLivePrices()
+    {
+        $jsonFilePath = public_path('live_prices.json');
+
+        if (!file_exists($jsonFilePath)) {
+            $this->warn('live_prices.json file not found');
+            return [];
+        }
+
+        $jsonContent = file_get_contents($jsonFilePath);
+        $livePrices = json_decode($jsonContent, true);
+
+        if (!is_array($livePrices)) {
+            $this->warn('Invalid JSON format in live_prices.json');
+            return [];
+        }
+
+        return $livePrices;
+    }
+
+    protected function findMatchingLivePrice($livePrices, $productCode, $accountRef)
+    {
+        foreach ($livePrices as $livePrice) {
+            if ($livePrice['sku'] === $productCode) {
+                if (!array_key_exists('account', $livePrice) || $livePrice['account'] === $accountRef) {
+                    return $livePrice;
+                }
+            }
+        }
+
+        return null;
     }
 }
