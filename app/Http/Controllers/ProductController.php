@@ -19,10 +19,10 @@ class ProductController extends Controller
             return response()->json(['error' => 'Product not found'], 404);
         }
 
-        // Fetch the live prices from the JSON file
+
         $livePrices = $this->getLivePrices();
 
-        // Check if there is a match in the live prices JSON data
+
         $matchingLivePrice = $this->findMatchingLivePrice($livePrices, $productSku, $accountId);
 
         if ($matchingLivePrice) {
@@ -32,7 +32,7 @@ class ProductController extends Controller
             ]);
         }
 
-        // Fetch the prices from the database
+
         $pricesQuery = Price::where('product_id', $product->id);
 
         if ($accountId) {

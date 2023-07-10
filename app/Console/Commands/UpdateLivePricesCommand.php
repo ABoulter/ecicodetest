@@ -57,7 +57,6 @@ class UpdateLivePricesCommand extends Command
                 ->first();
 
             if ($price) {
-                // Update the price value from the live price
                 $price->value = $livePrice['price'];
                 $price->save();
             }
