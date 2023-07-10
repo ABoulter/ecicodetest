@@ -10,6 +10,7 @@ class Account extends Model
     protected $table = 'accounts';
 
     protected $fillable = [
+        'id',
         'external_reference',
     ];
 }
