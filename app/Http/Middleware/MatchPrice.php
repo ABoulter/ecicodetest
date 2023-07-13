@@ -81,7 +81,7 @@ class MatchPrice
     private function getPrice($matchingLivePrice, $accountId, $livePrices, $productSku, $productId)
     {
         if ($matchingLivePrice && isset($matchingLivePrice['account'])) {
-            return $matchingLivePrice['price'];
+            return $price = $matchingLivePrice['price'];
         }
 
         $price = $this->findMatchingDatabasePrice($accountId, $productId);
@@ -89,8 +89,6 @@ class MatchPrice
             $price = $this->getLowestPublicPrice($livePrices, $productSku);
             if (!$price) {
                 $price = $this->getLowestPublicPriceFromDatabase($productId);
-            } else {
-                $price = 'No match found';
             }
         }
 
