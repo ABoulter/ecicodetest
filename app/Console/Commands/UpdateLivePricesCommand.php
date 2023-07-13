@@ -3,9 +3,9 @@
 namespace App\Console\Commands;
 
 use App\Models\Price;
+use App\Models\Account;
 use App\Models\Product;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\File;
 
 class UpdateLivePricesCommand extends Command
 {
@@ -14,9 +14,9 @@ class UpdateLivePricesCommand extends Command
     protected $description = 'Update prices from live_prices.json file';
 
     public function handle()
-    {
+    {  
         $jsonFilePath = public_path('live_prices.json');
-
+     
         if (!file_exists($jsonFilePath)) {
             $this->warn('live_prices.json file not found');
             return;
@@ -30,10 +30,10 @@ class UpdateLivePricesCommand extends Command
             return;
         }
 
-        foreach ($livePrices as $livePrice) {
+        foreach ($livePrices as $livePrice) {   
             $productCode = $livePrice['sku'];
             $accountRef = $livePrice['account'] ?? null;
-
+      
             $product = Product::where('sku', $productCode)->first();
 
             if (!$product) {
@@ -48,7 +48,7 @@ class UpdateLivePricesCommand extends Command
                     $this->warn("Account not found with reference: $accountRef");
                 }
             }
-
+ 
             $price = Price::where('product_id', $product->id)
                 ->where(function ($query) use ($account) {
                     $query->where('account_id', $account->id)

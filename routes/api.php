@@ -19,4 +19,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('/product/price', [ProductController::class, 'getProductPrice']);
+//define the api end point
+
+Route::get('/product/price', [ProductController::class, 'getProductPrice'])->middleware('product.price');
